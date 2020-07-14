@@ -1,6 +1,7 @@
 import os, time, sys
 import pandas as pd
-from globalvars import nucsequence, protsequence, tm_target, genename
+from globalvars import nucsequence, protsequence, \
+    tm_target, genename, nucseqcount
 from functions import *
 
 print('\n\nPosition example: aaacccATGacacactgtgtct --> POSITION=7')
@@ -19,6 +20,10 @@ aprimers = {}
 aprimers_left = {}
 aprimers_right = {}
 
+# Before the CDS starts at least 60 nucleotide needs to be provided.
+# This is important for common primer design
+
+# COMMON PRIMER DESIGN
 forwcom, forwcom_left, forwcom_right = justtrim(nucsequence, nucsequence[10:50], 10, 50,
                                                 tm_target)  # Common forward primer for all reactions
 if forwcom_left == None:
@@ -56,44 +61,44 @@ else:
 if forwcom_left == None:
     a, b, c, d = score(forwcom, tm_target, 1)
     df.loc[len(df)] = [0, 'Forward Common', str(forwcom), '-', str(tmfcom),
-                       percgc(forwcom), str(len(forwcom)), a, b, c, '-', d]
+                       gccontent(forwcom), len(forwcom), a, b, c, '-', d]
 
     a, b, c, d = score(revcom, tm_target, 1)
     df.loc[len(df)] = [0, 'Reverse Common', str(revcom), '-', str(tmrcom),
-                       percgc(revcom), str(len(revcom)), a, b, c, '-', d]
+                       gccontent(revcom), len(revcom), a, b, c, '-', d]
 else:
 
     a, b, c, d = score(forwcom, tm_target, 1)
     df.loc[len(df)] = [0, 'Forward Common (Both)', str(forwcom), '-',
-                       str(tmfcom), percgc(forwcom), str(len(forwcom)),
+                       str(tmfcom), gccontent(forwcom), len(forwcom),
                        a, b, c, '-', d]
 
     a, b, c, d = score(forwcom_left, tm_target, 1)
     df.loc[len(df)] = [0, 'Forward Common (Left)', str(forwcom_left),
-                       '-', str(tmfcom_left), percgc(forwcom_left),
-                       str(len(forwcom_left)), a, b, c, '-', d]
+                       '-', str(tmfcom_left), gccontent(forwcom_left),
+                       len(forwcom_left), a, b, c, '-', d]
 
     a, b, c, d = score(forwcom_right, tm_target, 1)
     df.loc[len(df)] = [0, 'Forward Common (Right)', str(forwcom_right),
-                       '-', str(tmfcom_right), percgc(forwcom_right),
-                       str(len(forwcom_right)), a, b, c, '-', d]
+                       '-', str(tmfcom_right), gccontent(forwcom_right),
+                       len(forwcom_right), a, b, c, '-', d]
 
     a, b, c, d = score(revcom, tm_target, 1)
     df.loc[len(df)] = [0, 'Reverse Common (Both)', str(revcom), '-',
-                       str(tmrcom), percgc(revcom), str(len(revcom)),
+                       str(tmrcom), gccontent(revcom), len(revcom),
                        a, b, c, '-', d]
 
     a, b, c, d = score(revcom_left, tm_target, 1)
     df.loc[len(df)] = [0, 'Reverse Common (Left)', str(revcom_left),
-                       '-', str(tmrcom_left), percgc(revcom_left),
-                       str(len(revcom_left)), a, b, c, '-', d]
+                       '-', str(tmrcom_left), gccontent(revcom_left),
+                       len(revcom_left), a, b, c, '-', d]
 
     a, b, c, d = score(revcom_right, tm_target, 1)
     df.loc[len(df)] = [0, 'Reverse Common (Right)', str(revcom_right),
-                       '-', str(tmrcom_right), percgc(revcom_right),
-                       str(len(revcom_right)), a, b, c, '-', d]
+                       '-', str(tmrcom_right), gccontent(revcom_right),
+                       len(revcom_right), a, b, c, '-', d]
 
-nucseqcount = list(range(nucstart, nucstart + 3 * len(protsequence) + 3, 3))
+
 for i in range(1, len(protsequence)):
     primername = namer(i, protsequence)
     primer_seq = (nucsequence[nucseqcount[i] - 18:nucseqcount[i]]
@@ -109,7 +114,7 @@ for i in range(1, len(protsequence)):
         a, b, c, d, e = score(pboth, tm_target)
         df.loc[len(df)] = [i + 1, primername + '-BF/R', primers[primername][0],
                            primers[primername][1], str(primers[primername][2]),
-                           percgc(primers[primername][0]), str(len(primers[primername][0])),
+                           gccontent(primers[primername][0]), len(primers[primername][0]),
                            a, b, c, d, e]
 
     else:
@@ -123,18 +128,18 @@ for i in range(1, len(protsequence)):
         a, b, c, d, e = score(pboth, tm_target)
         df.loc[len(df)] = [i + 1, primername + '-BF/R', primers[primername][0],
                            primers[primername][1], str(primers[primername][2]),
-                           percgc(primers[primername][0]), str(len(primers[primername][0])),
+                           gccontent(primers[primername][0]), len(primers[primername][0]),
                            a, b, c, d, e]
         a, b, c, d, e = score(pleft, tm_target)
         df.loc[len(df)] = [i + 1, primername + '-LF/R', primers_left[primername][0],
                            primers_left[primername][1], str(primers_left[primername][2]),
-                           percgc(primers_left[primername][0]), str(len(primers_left[primername][0])),
+                           gccontent(primers_left[primername][0]), len(primers_left[primername][0]),
                            a, b, c, d, e]
 
         a, b, c, d, e = score(pright, tm_target)
         df.loc[len(df)] = [i + 1, primername + '-RF/R', primers_right[primername][0],
                            primers_right[primername][1], str(primers_right[primername][2]),
-                           percgc(primers_right[primername][0]), str(len(primers_right[primername][0])),
+                           gccontent(primers_right[primername][0]), len(primers_right[primername][0]),
                            a, b, c, d, e]
 
     if aleft == None:
@@ -144,7 +149,7 @@ for i in range(1, len(protsequence)):
         a, b, c, d, e = score(aboth, tm_target)
         df.loc[len(df)] = [i + 1, primername + '-aBF/R', aprimers[primername][0],
                            aprimers[primername][1], str(aprimers[primername][2]),
-                           percgc(aprimers[primername][0]), str(len(aprimers[primername][0])),
+                           gccontent(aprimers[primername][0]), len(aprimers[primername][0]),
                            a, b, c, d, e]
 
     else:
@@ -157,17 +162,17 @@ for i in range(1, len(protsequence)):
         a, b, c, d, e = score(aboth, tm_target)
         df.loc[len(df)] = [i + 1, primername + '-aBF/R', aprimers[primername][0],
                            aprimers[primername][1], str(aprimers[primername][2]),
-                           percgc(aprimers[primername][0]), str(len(aprimers[primername][0])),
+                           gccontent(aprimers[primername][0]), len(aprimers[primername][0]),
                            a, b, c, d, e]
         a, b, c, d, e = score(aleft, tm_target)
         df.loc[len(df)] = [i + 1, primername + '-aLF/R', aprimers_left[primername][0],
                            aprimers_left[primername][1], str(aprimers_left[primername][2]),
-                           percgc(aprimers_left[primername][0]), str(len(aprimers_left[primername][0])),
+                           gccontent(aprimers_left[primername][0]), len(aprimers_left[primername][0]),
                            a, b, c, d, e]
         a, b, c, d, e = score(aright, tm_target)
         df.loc[len(df)] = [i + 1, primername + '-aRF/R', aprimers_right[primername][0],
                            aprimers_right[primername][1], str(aprimers_right[primername][2]),
-                           percgc(aprimers_right[primername][0]), str(len(aprimers_right[primername][0])),
+                           gccontent(aprimers_right[primername][0]), len(aprimers_right[primername][0]),
                            a, b, c, d, e]
 
 df.sort_values(by=['Residue #', 'Total Score'],
