@@ -3,7 +3,7 @@ import os,time,sys
 import pandas as pd
 
 '''
-If you run this file (main.py) it will ask you two files and two variables.
+Two files and two variables needs to be provided to successfully run this file (main.py).
 
 Prepare two files. 
 
@@ -11,20 +11,18 @@ Prepare two files.
 Leading and trailing sequences are important for designing the common primers. (Check figure-1 for 
 why we use common primers)
 
-  - You can change the default positions of searching space for best common primer. 
-  Now takes 40 nucleotides (position 10:50(line 70) and -50:-10 (line 82)) for forward common and reverse common primers. 
-  
-  - We try to adjust the Tm of each primer designed as close to TARGET Tm temperature. (You can change target Tm at line 60).  
+  - The default positions of  for best common primer searching space can be modified. 
+  - Adjusted default primer length 40 nucleotides for forward common and reverse common primers.
+        (position 10:50(line 70) and -50:-10 (line 82)) These positions can be modified by users choice. 
+  - We try to adjust the Tm of each primer designed as close to TARGET Tm temperature. 
+        (Target Tm can be modified at line 60).  
 
 2. Protein file. Just provide a fasta file of your protein sequence. 
 
 Variables:
 1. Location of the fasta files. 
   - I recommend you put them in the same folder with main.py and functions.py files. 
-
-2. Position of your start codon in nucleotide file.(Start counting from 1. (check the example))
-
-
+2. Position of your start codon in nucleotide file.(Start counting from 1.)
 
 This script will design primers for each residue starting from second residue to last residue before stop codon.
 
