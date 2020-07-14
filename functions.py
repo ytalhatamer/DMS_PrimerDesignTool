@@ -268,7 +268,7 @@ def logic(nucseq,seq,p_start,p_end,tm_target,k=10):
 
 ################################################################
 
-def justtrim(nucseq,seq,p_start,p_end,tm_target):
+def justtrim(nucsequence, seq, p_start, p_end, tm_target):
     # print('JUSTTRIM Bfr-->',seq,len(seq))
     for m in range(10):
         if seq[0]=='c' or seq[0]=='g':
@@ -281,7 +281,7 @@ def justtrim(nucseq,seq,p_start,p_end,tm_target):
         seq=seq[:-1]
         p_end-=1
     #print 'JUSTTRIM-->AfterTrim',seq,len(seq)
-    seq,seqleft,seqright=logic(nucseq,seq,p_start,p_end,tm_target)
+    seq,seqleft,seqright=logic(nucsequence, seq, p_start, p_end, tm_target)
     return seq,seqleft,seqright
 def percgc(seq):
     return str(100*(seq.count('g')+seq.count('c'))/float(len(seq)))
