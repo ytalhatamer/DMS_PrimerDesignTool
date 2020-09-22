@@ -14,7 +14,7 @@ posstartcodon = 64
 
 # Read gene sequence and translate
 genename=inputfile.split('.')[0]
-protsequencefilename=''.join([inputfile.split('.')[:-1], '-protein.', inputfile.split('.')[-1]])
+protsequencefilename=''.join([inputfile.split('.')[0], '-protein.', inputfile.split('.')[-1]])
 protsequencefile=open(protsequencefilename, 'w')
 nucsequence = open(inputfile, 'r').read().split('\n')[1].lower()
 nucstart=posstartcodon-1 # -1 comes due to 0 indexing
