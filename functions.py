@@ -2,9 +2,9 @@ from globalvars import srange
 
 
 def namer(count, proteinseq, optionalname=None):
-    l = len(str(len(proteinseq)))
+    ll = len(str(len(proteinseq)))
     if optionalname is None:
-        primername = 'p_' + '0' * (l - len(str(count + 1))) \
+        primername = 'p_' + '0' * (ll - len(str(count + 1))) \
                      + str(count + 1) + '_' \
                      + proteinseq[count]
     else:
@@ -235,8 +235,8 @@ def score(seq, tm_target, flag=0):
     gc_content = ((seq.count('g') + seq.count('c')) / float(len(seq) - 3))
     gc_score = round((100 * gc_content * (1. - gc_content)), 2)
     tm_score = round(-((tm - tm_lowlim) * (tm - tm_uplim)) / ((srange ** 2) / 25.), 2)
-    len_score = round(-(len(seq) ** 2 - 70 * len(seq) + 1200),
-                      2)  # This scoring is optimized for primers with length in between 30-40 nucleotides.Score values: [-Inf to 25]
+    len_score = round(-(len(seq) ** 2 - 70 * len(seq) + 1200), 2)
+    # This scoring is optimized for primers with length in between 30-40 nucleotides.Score values: [-Inf to 25]
     if flag == 0:
         wing = (len(seq.split('NNS')[0]) - float(len(seq.split('NNS')[1])))
         wing_score = round((25 - wing ** 2), 2)
