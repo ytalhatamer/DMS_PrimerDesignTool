@@ -28,18 +28,20 @@ def checktm(tm_int, tm_target):
         else:
             return 3
 
+
 def gccontent(seq):
     return str(100 * (seq.count('g') + seq.count('c')) / float(len(seq)))
 
 
-def reversecomplement(seq, NNSpresent):
-    def complement(seq):
-        compseq = seq.replace('a', '1').replace('g', '2') \
-            .replace('t', '3').replace('c', '4') \
-            .replace('1', 't').replace('2', 'c') \
-            .replace('3', 'a').replace('4', 'g')
-        return compseq
+def complement(seq):
+    compseq = seq.replace('a', '1').replace('g', '2') \
+        .replace('t', '3').replace('c', '4') \
+        .replace('1', 't').replace('2', 'c') \
+        .replace('3', 'a').replace('4', 'g')
+    return compseq
 
+
+def reversecomplement(seq, NNSpresent):
     tmp = []
     if NNSpresent:
         cseq = complement(seq)
@@ -52,38 +54,37 @@ def reversecomplement(seq, NNSpresent):
     return rcseq
 
 
+def checktrim10nt5p(seq, p_start):
+    for m in range(10):
+        if seq[0] == 'c' or seq[0] == 'g':
+            break
+        seq = seq[1:]
+        p_start += 1
+    return seq, p_start
+
+
+def checktrim10nt3p(seq, p_end):
+    for m in range(10):
+        if seq[-1] == 'c' or seq[-1] == 'g':
+            break
+        seq = seq[:-1]
+        p_end -= 1
+    return seq, p_end
+
+
 def trimleft(nucseq, seq, p_start, p_end, tm_target):
     # This function starts trimming the sequence from
     # left then right consequtively...
     k = 0
     while k < 10 and checktm(tmcalculator(seq), tm_target) != 2:
-
         if k % 2 == 0:
             seq = seq[1:]
             p_start += 1
-            for m in range(10):
-                if seq[0] == 'c' or seq[0] == 'g':
-                    break
-                seq = seq[1:]
-                p_start += 1
-            for m in range(10):
-                if seq[-1] == 'c' or seq[-1] == 'g':
-                    break
-                seq = seq[:-1]
-                p_end -= 1
         else:
             seq = seq[:-1]
             p_end -= 1
-            for m in range(10):
-                if seq[0] == 'c' or seq[0] == 'g':
-                    break
-                seq = seq[1:]
-                p_start += 1
-            for m in range(10):
-                if seq[-1] == 'c' or seq[-1] == 'g':
-                    break
-                seq = seq[:-1]
-                p_end -= 1
+        seq, p_start = checktrim10nt5p(seq, p_start)
+        seq, p_end = checktrim10nt3p(seq, p_end)
         k += 1
     return seq
 
@@ -96,29 +97,11 @@ def trimright(nucseq, seq, p_start, p_end, tm_target):
         if k % 2 == 0:
             seq = seq[:-1]
             p_end -= 1
-            for m in range(10):
-                if seq[0] == 'c' or seq[0] == 'g':
-                    break
-                seq = seq[1:]
-                p_start += 1
-            for m in range(10):
-                if seq[-1] == 'c' or seq[-1] == 'g':
-                    break
-                seq = seq[:-1]
-                p_end -= 1
         else:
             seq = seq[1:]
             p_start += 1
-            for m in range(10):
-                if seq[0] == 'c' or seq[0] == 'g':
-                    break
-                seq = seq[1:]
-                p_start += 1
-            for m in range(10):
-                if seq[-1] == 'c' or seq[-1] == 'g':
-                    break
-                seq = seq[:-1]
-                p_end -= 1
+        seq, p_start = checktrim10nt5p(seq, p_start)
+        seq, p_end = checktrim10nt3p(seq, p_end)
         # print 'TRIMRIGHT-Trial',k,'SEQUENCE',seq
         k += 1
     return seq
@@ -130,18 +113,28 @@ def trimboth(nucseq, seq, p_start, p_end, tm_target):
         seq = seq[1:-1]
         p_start += 1
         p_end -= 1
-        for m in range(10):
-            if seq[0] == 'c' or seq[0] == 'g':
-                break
-            seq = seq[1:]
-            p_start += 1
-        for m in range(10):
-            if seq[-1] == 'c' or seq[-1] == 'g':
-                break
-            seq = seq[:-1]
-            p_end -= 1
+        seq, p_start = checktrim10nt5p(seq, p_start)
+        seq, p_end = checktrim10nt3p(seq, p_end)
         k += 1
     return seq
+
+
+def checkadd10nt5p(nucseq, seq, p_start):
+    for m in range(10):
+        if seq[0] == 'c' or seq[0] == 'g':
+            break
+        seq = nucseq[p_start - 1] + seq
+        p_start -= 1
+    return seq, p_start
+
+
+def checkadd10nt3p(nucseq, seq, p_end):
+    for m in range(10):
+        if seq[-1] == 'c' or seq[-1] == 'g':
+            break
+        seq = seq + nucseq[p_end + 1]
+        p_end += 1
+    return seq, p_end
 
 
 def addleft(nucseq, seq, p_start, p_end, tm_target, kup=10):
@@ -152,29 +145,11 @@ def addleft(nucseq, seq, p_start, p_end, tm_target, kup=10):
         if k % 2 == 0:
             seq = nucseq[p_start - 1] + seq
             p_start -= 1
-            for m in range(10):
-                if seq[0] == 'c' or seq[0] == 'g':
-                    break
-                seq = nucseq[p_start - 1] + seq
-                p_start -= 1
-            for m in range(10):
-                if seq[-1] == 'c' or seq[-1] == 'g':
-                    break
-                seq = seq + nucseq[p_end + 1]
-                p_end += 1
         else:
             seq = seq + nucseq[p_end + 1]
             p_end += 1
-            for m in range(10):
-                if seq[0] == 'c' or seq[0] == 'g':
-                    break
-                seq = nucseq[p_start - 1] + seq
-                p_start -= 1
-            for m in range(10):
-                if seq[-1] == 'c' or seq[-1] == 'g':
-                    break
-                seq = seq + nucseq[p_end + 1]
-                p_end += 1
+        seq, p_start = checkadd10nt5p(nucseq, seq, p_start)
+        seq, p_end = checkadd10nt3p(nucseq, seq, p_end)
         k += 1
         if len(seq) >= 39:
             break
@@ -189,29 +164,12 @@ def addright(nucseq, seq, p_start, p_end, tm_target, kup=10):
         if k % 2 == 0:
             seq = seq + nucseq[p_end + 1]
             p_end += 1
-            for m in range(10):
-                if seq[0] == 'c' or seq[0] == 'g':
-                    break
-                seq = nucseq[p_start - 1] + seq
-                p_start -= 1
-            for m in range(10):
-                if seq[-1] == 'c' or seq[-1] == 'g':
-                    break
-                seq = seq + nucseq[p_end + 1]
-                p_end += 1
+
         else:
             seq = nucseq[p_start - 1] + seq
             p_start -= 1
-            for m in range(10):
-                if seq[0] == 'c' or seq[0] == 'g':
-                    break
-                seq = nucseq[p_start - 1] + seq
-                p_start -= 1
-            for m in range(10):
-                if seq[-1] == 'c' or seq[-1] == 'g':
-                    break
-                seq = seq + nucseq[p_end + 1]
-                p_end += 1
+        seq, p_start = checkadd10nt5p(nucseq, seq, p_start)
+        seq, p_end = checkadd10nt3p(nucseq, seq, p_end)
         k += 1
         if len(seq) >= 39:
             break
@@ -226,16 +184,8 @@ def addboth(nucseq, seq, p_start, p_end, tm_target, kup=10):
         seq = nucseq[p_start - 1] + seq + nucseq[p_end + 1]
         p_start -= 1
         p_end += 1
-        for m in range(10):
-            if seq[0] == 'c' or seq[0] == 'g':
-                break
-            seq = seq + nucseq[p_start - 1]
-            p_start -= 1
-        for m in range(10):
-            if seq[-1] == 'c' or seq[-1] == 'g':
-                break
-            seq = seq + nucseq[p_end + 1]
-            p_end += 1
+        seq, p_start = checkadd10nt5p(nucseq, seq, p_start)
+        seq, p_end = checkadd10nt3p(nucseq, seq, p_end)
         k += 1
         if len(seq) >= 39:
             break
@@ -276,8 +226,6 @@ def justtrim(nucsequence, seq, p_start, p_end, tm_target):
         p_end -= 1
     seq, seqleft, seqright = logic(nucsequence, seq, p_start, p_end, tm_target)
     return seq, seqleft, seqright
-
-
 
 
 def score(seq, tm_target, flag=0):
