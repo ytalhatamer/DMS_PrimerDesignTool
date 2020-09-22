@@ -1,16 +1,15 @@
-import os, time, sys
 import pandas as pd
 from globalvars import nucsequence, protsequence, \
     tm_target, genename, nucseqcount
 from functions import *
 
-print('\n\nPosition example: aaacccATGacacactgtgtct --> POSITION=7')
-nucstart = int(input('Provide the position of A in ...ATG...: ')) - 1
+
+# nucstart = int(input('Provide the position of A in ...ATG...: ')) - 1
 
 df = pd.DataFrame([], columns=['Residue #', 'Primer Name', 'Primer Seq(Fwd)',
                                'Primer Sequence (Rev-Comp)', 'Tm', 'GC Content(%)',
-                               'Primer Length', 'GC Score', 'Tm Score', 'Length Score',
-                               'Wing Score', 'Total Score'])
+                               'Primer Length', 'GC Score', 'Tm Score',
+                               'Length Score', 'Wing Score', 'Total Score'])
 
 primers = {}
 primers_left = {}
@@ -24,8 +23,8 @@ aprimers_right = {}
 # This is important for common primer design
 
 # COMMON PRIMER DESIGN
-forwcom, forwcom_left, forwcom_right = justtrim(nucsequence, nucsequence[10:50], 10, 50,
-                                                tm_target)  # Common forward primer for all reactions
+forwcom, forwcom_left, forwcom_right = justtrim(nucsequence, nucsequence[10:50],
+                                                10, 50, tm_target)  # Common forward primer for all reactions
 if forwcom_left == None:
     tmfcom = tmcalculator(forwcom)
     primers_right['forward'] = primers_left['forward'] = primers['forward'] = [forwcom, None, tmfcom]
