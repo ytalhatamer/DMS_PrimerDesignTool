@@ -10,6 +10,7 @@ translation={'ACC':'T','ATG':'M','AAG':'K','AAA':'K','ATC':'I','AAC':'N','ATA':'
 
 # Input variables
 inputfile = 'tolC.fasta'
+print('\n\nPosition example: aaacccATGacacactgtgtct --> POSITION=7')
 posstartcodon = 64
 
 # Read gene sequence and translate
