@@ -16,27 +16,27 @@ translation = {'ACC': 'T', 'ATG': 'M', 'AAG': 'K', 'AAA': 'K', 'ATC': 'I',
                'TTG': 'L', 'TCC': 'S', 'TCA': 'S', 'TCT': 'S'}
 
 # Input variables
-inputfile = 'tolC_nuc.fasta'
+inputfile = 'input/oxb14-tolc.fasta'
 print('\n\nFor finding the CDS start position use start indexing with 1.\n'
       'Position example: aaacccATGacacactgtgtct --> POSITION=7')
 # Before the CDS starts at least 60 nucleotide needs to be provided.
 # This is important for common primer design
-posstartcodon = 65
+posstartcodon = 519
 print('Start codon position: {0}'.format(posstartcodon))
 # Next two lines provide region where we define common primer positions.
 # Forward primer will be selected from sequence starting from 10th position
 # to 50th position.(~15 nucleotide before CDS)
 # Likewise common reverse primer will be selected from last 50 nucleotides of the sequence
 # excluding last 10 nucleotides
-common_fwd_pos = [10, 50]
-common_rev_pos = [-50, -10]
+common_fwd_pos = [470, 510]
+common_rev_pos = [2010, 2050]
 
 # Read gene sequence and translate
 genename = inputfile.split('.')[0]
 protsequencefilename = ''.join([inputfile.split('.')[0], '-protein.',
-                                inputfile.split('.')[-1]])
+                                inputfile.split('.')[-1]]).replace('input','output')
 protsequencefile = open(protsequencefilename, 'w')
-nucsequence = open(inputfile, 'r').read().split('\n')[1].lower()
+nucsequence = ''.join(open(inputfile, 'r').read().split('\n')[1:]).lower()
 nucstart = posstartcodon - 1  # -1 comes due to 0 indexing
 
 pos = nucstart
@@ -49,6 +49,9 @@ posstopcodon = pos
 print('Protein Sequence : ', protsequence)
 print('Stop codon position: {0}'.format(posstopcodon))
 protsequence = protsequence.capitalize()
+protsequencefile.write('>'+genename+'\n'+protsequence)
+protsequencefile.close()
+
 nucseqcount = list(range(nucstart, nucstart + 3 * len(protsequence) + 3, 3))
 
 # Design Parameters
