@@ -6,7 +6,7 @@ def namer(count, proteinseq, optionalname=None):
     if optionalname is None:
         primername = 'p_' + '0' * (ll - len(str(count + 1))) \
                      + str(count + 1) + '_' \
-                     + proteinseq[count]
+                     + proteinseq[count].upper()
     else:
         primername = optionalname
     return primername
@@ -30,7 +30,7 @@ def checktm(tm_int, tm_target):
 
 
 def gccontent(seq):
-    return str(100 * (seq.count('g') + seq.count('c')) / float(len(seq)))
+    return 100 * (seq.count('g') + seq.count('c')) / float(len(seq))
 
 
 def complement(seq):
@@ -44,13 +44,13 @@ def complement(seq):
 def reversecomplement(seq, NNSpresent):
     tmp = []
     if NNSpresent:
-        cseq = complement(seq)
-        rcseq = cseq[::-1]
-    else:
         wingseq = seq.split('NNS')
         for wing in wingseq:
             tmp.append(complement(wing))
         rcseq = tmp[1][::-1] + 'SNN' + tmp[0][::-1]
+    else:
+        cseq = complement(seq)
+        rcseq = cseq[::-1]
     return rcseq
 
 
@@ -233,15 +233,15 @@ def score(seq, tm_target, flag=0):
     tm_lowlim = tm_target - srange
     tm_uplim = tm_target + srange
     gc_content = ((seq.count('g') + seq.count('c')) / float(len(seq) - 3))
-    gc_score = round((100 * gc_content * (1. - gc_content)), 2)
-    tm_score = round(-((tm - tm_lowlim) * (tm - tm_uplim)) / ((srange ** 2) / 25.), 2)
-    len_score = round(-(len(seq) ** 2 - 70 * len(seq) + 1200), 2)
+    gc_score = (100 * gc_content * (1. - gc_content))
+    tm_score = -((tm - tm_lowlim) * (tm - tm_uplim)) / ((srange ** 2) / 25.)
+    len_score =-(len(seq) ** 2 - 70 * len(seq) + 1200)
     # This scoring is optimized for primers with length in between 30-40 nucleotides.Score values: [-Inf to 25]
     if flag == 0:
         wing = (len(seq.split('NNS')[0]) - float(len(seq.split('NNS')[1])))
-        wing_score = round((25 - wing ** 2), 2)
-        totalscore = round(gc_score + tm_score + len_score + wing_score, 2)
+        wing_score = (25 - wing ** 2)
+        totalscore = gc_score + tm_score + len_score + wing_score
         return gc_score, tm_score, len_score, wing_score, totalscore
     else:
-        totalscore = str(float(gc_score) + float(tm_score) + float(len_score))
+        totalscore = float(gc_score) + float(tm_score) + float(len_score)
         return gc_score, tm_score, len_score, totalscore
