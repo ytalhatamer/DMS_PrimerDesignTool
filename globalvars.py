@@ -23,6 +23,13 @@ print('\n\nFor finding the CDS start position use start indexing with 1.\n'
 # This is important for common primer design
 posstartcodon = 65
 print('Start codon position: {0}'.format(posstartcodon))
+# Next two lines provide region where we define common primer positions.
+# Forward primer will be selected from sequence starting from 10th position
+# to 50th position.(~15 nucleotide before CDS)
+# Likewise common reverse primer will be selected from last 50 nucleotides of the sequence
+# excluding last 10 nucleotides
+common_fwd_pos = [10, 50]
+common_rev_pos = [-50, -10]
 
 # Read gene sequence and translate
 genename = inputfile.split('.')[0]
