@@ -16,14 +16,13 @@ why we use common primers)
         (Target Tm can be modified at line 60).  
 
  ###  To run the code:
- - Place fasta file in to the same folder with the script(main and functions.py). 
+ - Place fasta file in to the input folder. 
  - Update globalvars.py file with fasta file name and input variables (see below). 
  - Run main.py
 
 #### Inputs:
-All inputs are placed in "globalvars.py" file. 
-1. Location of the fasta files.
-    1. I recommend you put them in the same folder with main.py and functions.py files. 
+All input names and variables are placed in "globalvars.py" file. 
+1. Location and the name of the fasta file.
 2. Position of your start codon in nucleotide file.(Start counting from 1.) 
 
 #### Returns:
@@ -69,7 +68,7 @@ If you want to use reverse common primer below are the primer sets you need to u
     2. Reverse complement of left wing of reverse NNS primer (Forward)
 
 *****************************************************************
-Just to provide an example, I put two files in the folder. tolC_gene.fasta, tolC_protein.fasta 
-You can run main.py and gene starts at position 64.
-The output csv file is also provided in the folder.
+Just to provide an example, I put two files in the input folder: oxb14-tolC.fasta
+You can run main.py and gene starts at position 519.
+The output csv file is also provided in the output folder.
 *****************************************************************
