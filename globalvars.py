@@ -29,12 +29,11 @@ print('Start codon position: {0}'.format(posstartcodon))
 # Likewise common reverse primer will be selected from last 50 nucleotides of the sequence
 # excluding last 10 nucleotides
 common_fwd_pos = [470, 510]
-common_rev_pos = [2010, 2050]
+common_rev_pos = [2030, 2070]
 
 # Read gene sequence and translate
-genename = inputfile.split('.')[0]
-protsequencefilename = ''.join([inputfile.split('.')[0], '-protein.',
-                                inputfile.split('.')[-1]]).replace('input','output')
+genename = inputfile.split('.')[0].replace('input/','')
+protsequencefilename = 'output/' + genename + '-protein.fasta'
 protsequencefile = open(protsequencefilename, 'w')
 nucsequence = ''.join(open(inputfile, 'r').read().split('\n')[1:]).lower()
 nucstart = posstartcodon - 1  # -1 comes due to 0 indexing
@@ -42,13 +41,13 @@ nucstart = posstartcodon - 1  # -1 comes due to 0 indexing
 pos = nucstart
 protsequence = ''
 while translation[nucsequence[pos:pos + 3].upper()] != '*':
-    protsequence += translation[nucsequence[pos:pos + 3].upper()]
+    protsequence += translation[nucsequence[pos:pos + 3].upper()].upper()
     pos += 3
 
 posstopcodon = pos
 print('Protein Sequence : ', protsequence)
 print('Stop codon position: {0}'.format(posstopcodon))
-protsequence = protsequence.capitalize()
+
 protsequencefile.write('>'+genename+'\n'+protsequence)
 protsequencefile.close()
 
