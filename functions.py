@@ -243,5 +243,7 @@ def score(seq, tm_target, flag=0):
         totalscore = gc_score + tm_score + len_score + wing_score
         return gc_score, tm_score, len_score, wing_score, totalscore
     else:
-        totalscore = float(gc_score) + float(tm_score) + float(len_score)
+        # Since common primers do not have NNS, they also do not have a wing score.
+        # For that reason, total score is normalized to 100.
+        totalscore = (float(gc_score) + float(tm_score) + float(len_score)) * 4. / 3.
         return gc_score, tm_score, len_score, totalscore
