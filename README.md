@@ -6,14 +6,15 @@ Primer Design Tool for making Deep Mutational Scanning Libraries of genes/protei
 One file and one variable needs to be provided to successfully run this file (main.py).
 
 1. Nucleotide file. Take your gene sequence with at least 60 nucleotide before and after the gene. 
-Leading and trailing sequences are important for designing the common primers. (Check figure-1 for 
-why we use common primers)
+Leading and trailing sequences are important for designing the common primers. 
+
+ (Check figure-1 for why we use common primers) 
 
   - The default positions of  for best common primer searching space can be modified. 
   - Adjusted default primer length 40 nucleotides for forward common and reverse common primers.
-        (position 10:50(line 70) and -50:-10 (line 82)) These positions can be modified by users choice. 
+        (position 470:510 (line 31) and 2030:2070 (line 32)) These positions can be modified by users choice. 
   - We try to adjust the Tm of each primer designed as close to TARGET Tm temperature. 
-        (Target Tm can be modified at line 60).  
+        (Target Tm can be modified at line 57 with sensitivity range of t degrees (line 58)).  
 
  ###  To run the code:
  - Place fasta file in to the input folder. 
