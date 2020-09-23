@@ -27,7 +27,9 @@ forwcom, forwcom_left, forwcom_right = justtrim(nucsequence, nucsequence[10:50],
                                                 10, 50, tm_target)  # Common forward primer for all reactions
 if forwcom_left == None:
     tmfcom = tmcalculator(forwcom)
-    primers_right['forward'] = primers_left['forward'] = primers['forward'] = [forwcom, None, tmfcom]
+    primers_right['forward'] = \
+        primers_left['forward'] = \
+        primers['forward'] = [forwcom, None, tmfcom]
 else:
     tmfcom_left = tmcalculator(forwcom_left)
     tmfcom_right = tmcalculator(forwcom_right)
@@ -36,14 +38,16 @@ else:
     primers_left['forward'] = [forwcom_left, None, tmfcom_left]
     primers_right['forward'] = [forwcom_right, None, tmfcom_right]
 
-revcom, revcom_left, revcom_right = justtrim(nucsequence, nucsequence[-50:-10], len(nucsequence) - 50,
-                                             len(nucsequence) - 10,
+revcom, revcom_left, revcom_right = justtrim(nucsequence, nucsequence[-50:-10],
+                                             len(nucsequence) - 50, len(nucsequence) - 10,
                                              tm_target)  # Common reverse primer for all reactions
 
 if revcom_left == None:
     revcom = reversecomplement(revcom, 0)
     tmrcom = tmcalculator(revcom)
-    primers_right['reverse'] = primers_left['reverse'] = primers['reverse'] = [revcom, None, tmrcom]
+    primers_right['reverse'] = \
+        primers_left['reverse'] = \
+        primers['reverse'] = [revcom, None, tmrcom]
 
 else:
     revcom_left = reversecomplement(revcom_left, 0)
