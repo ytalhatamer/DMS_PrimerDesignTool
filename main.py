@@ -1,106 +1,81 @@
-import pandas as pd
-from globalvars import nucsequence, protsequence, \
-    tm_target, genename, nucseqcount
-from functions import *
+import numpy as np
+from globalvars import nucsequence, protsequence, common_fwd_pos, common_rev_pos, \
+    tm_target, genename, nucseqcount, df, typedict
+from functions import namer, tmcalculator, gccontent, reversecomplement, \
+    logic, justtrim, score
 
+primers = dict(right=dict(), left=dict(), both=dict())
 
-# nucstart = int(input('Provide the position of A in ...ATG...: ')) - 1
-
-df = pd.DataFrame([], columns=['Residue #', 'Primer Name', 'Primer Seq(Fwd)',
-                               'Primer Sequence (Rev-Comp)', 'Tm', 'GC Content(%)',
-                               'Primer Length', 'GC Score', 'Tm Score',
-                               'Length Score', 'Wing Score', 'Total Score'])
-
-primers = {}
-primers_left = {}
-primers_right = {}
-
-aprimers = {}
-aprimers_left = {}
-aprimers_right = {}
+aprimers = dict(right=dict(), left=dict(), both=dict())
 
 # Before the CDS starts at least 60 nucleotide needs to be provided.
 # This is important for common primer design
 
 # COMMON PRIMER DESIGN
-forwcom, forwcom_left, forwcom_right = justtrim(nucsequence, nucsequence[10:50],
-                                                10, 50, tm_target)  # Common forward primer for all reactions
-if forwcom_left == None:
-    tmfcom = tmcalculator(forwcom)
-    primers_right['forward'] = \
-        primers_left['forward'] = \
-        primers['forward'] = [forwcom, None, tmfcom]
-else:
-    tmfcom_left = tmcalculator(forwcom_left)
-    tmfcom_right = tmcalculator(forwcom_right)
-    tmfcom = tmcalculator(forwcom)
-    primers['forward'] = [forwcom, None, tmfcom]
-    primers_left['forward'] = [forwcom_left, None, tmfcom_left]
-    primers_right['forward'] = [forwcom_right, None, tmfcom_right]
+# Forward Common Primers
+# Common forward primer for all reactions are send for optimization.
+forwcom, forwcom_left, forwcom_right = justtrim(nucsequence,
+                                                nucsequence[common_fwd_pos[0]:common_fwd_pos[1]],
+                                                common_fwd_pos[0],
+                                                common_fwd_pos[1],
+                                                tm_target)
 
-revcom, revcom_left, revcom_right = justtrim(nucsequence, nucsequence[-50:-10],
-                                             len(nucsequence) - 50, len(nucsequence) - 10,
+if forwcom_left:
+    for forward_common, pos in zip([forwcom, forwcom_left, forwcom_right], ['both', 'left', 'right']):
+        tm_common_forward = tmcalculator(forward_common)
+        primers[pos]['forward'] = [forward_common, None, tm_common_forward]
+
+        a, b, c, d = score(forward_common, tm_target, 1)  # 1 is a flag to score function telling no NNS in primer.
+        df.loc[len(df)] = [0, 'Forward Common (' + pos + ')', str(forward_common),
+                           reversecomplement(forward_common, 0), str(tm_common_forward),
+                           gccontent(forward_common), len(forward_common),
+                           a, b, c, np.nan, d]
+else:
+    tm_common_forward = tmcalculator(forwcom)
+    primers['both']['forward'] = \
+        primers['right']['forward'] = \
+        primers['left']['forward'] = [forwcom, None, tm_common_forward]
+
+    a, b, c, d = score(forwcom, tm_target, 1)
+    df.loc[len(df)] = [0, 'Forward Common', str(forwcom),
+                       reversecomplement(forwcom, 0), str(tm_common_forward),
+                       gccontent(forwcom), len(forwcom), a, b, c, np.nan, d]
+
+# Designing Reverse Common Primers
+revcom, revcom_left, revcom_right = justtrim(nucsequence,
+                                             nucsequence[common_rev_pos[0]:common_rev_pos[1]],
+                                             common_rev_pos[0],
+                                             common_rev_pos[1],
                                              tm_target)  # Common reverse primer for all reactions
 
-if revcom_left == None:
-    revcom = reversecomplement(revcom, 0)
-    tmrcom = tmcalculator(revcom)
-    primers_right['reverse'] = \
-        primers_left['reverse'] = \
-        primers['reverse'] = [revcom, None, tmrcom]
+if revcom_left:
+    for reverse_common, pos in zip([revcom, revcom_left, revcom_right], ['both', 'left', 'right']):
+        rev_comp_sequence = reversecomplement(reverse_common, 0)
+        tm_common_reverse = tmcalculator(reverse_common)
+        primers[pos]['reverse'] = [reverse_common, None, tm_common_reverse]
 
+        a, b, c, d = score(reverse_common, tm_target, 1)
+        df.loc[len(df)] = [0, 'Reverse Common (' + pos + ')',
+                           str(reverse_common), reversecomplement(reverse_common, 0),
+                           str(tm_common_reverse), gccontent(reverse_common),
+                           len(reverse_common), a, b, c, np.nan, d]
 else:
-    revcom_left = reversecomplement(revcom_left, 0)
-    revcom_right = reversecomplement(revcom_right, 0)
-    revcom = reversecomplement(revcom, 0)
-    tmrcom_left = tmcalculator(revcom_left)
-    tmrcom_right = tmcalculator(revcom_right)
-    tmrcom = tmcalculator(revcom)
-
-    primers['reverse'] = [revcom, None, tmrcom]
-    primers_left['reverse'] = [revcom_left, None, tmrcom_left]
-    primers_right['reverse'] = [revcom_right, None, tmrcom_right]
-
-if forwcom_left == None:
-    a, b, c, d = score(forwcom, tm_target, 1)
-    df.loc[len(df)] = [0, 'Forward Common', str(forwcom), '-', str(tmfcom),
-                       gccontent(forwcom), len(forwcom), a, b, c, '-', d]
+    rev_comp_sequence = reversecomplement(revcom, 0)
+    tm_common_reverse = tmcalculator(rev_comp_sequence)
+    primers['both']['reverse'] = \
+        primers['right']['reverse'] = \
+        primers['left']['reverse'] = [rev_comp_sequence, None, tm_common_reverse]
 
     a, b, c, d = score(revcom, tm_target, 1)
-    df.loc[len(df)] = [0, 'Reverse Common', str(revcom), '-', str(tmrcom),
-                       gccontent(revcom), len(revcom), a, b, c, '-', d]
-else:
+    df.loc[len(df)] = [0, 'Reverse Common', str(revcom),
+                       reversecomplement(revcom, 0), str(tm_common_reverse),
+                       gccontent(revcom), len(revcom), a, b, c, np.nan, d]
 
-    a, b, c, d = score(forwcom, tm_target, 1)
-    df.loc[len(df)] = [0, 'Forward Common (Both)', str(forwcom), '-',
-                       str(tmfcom), gccontent(forwcom), len(forwcom),
-                       a, b, c, '-', d]
-
-    a, b, c, d = score(forwcom_left, tm_target, 1)
-    df.loc[len(df)] = [0, 'Forward Common (Left)', str(forwcom_left),
-                       '-', str(tmfcom_left), gccontent(forwcom_left),
-                       len(forwcom_left), a, b, c, '-', d]
-
-    a, b, c, d = score(forwcom_right, tm_target, 1)
-    df.loc[len(df)] = [0, 'Forward Common (Right)', str(forwcom_right),
-                       '-', str(tmfcom_right), gccontent(forwcom_right),
-                       len(forwcom_right), a, b, c, '-', d]
-
-    a, b, c, d = score(revcom, tm_target, 1)
-    df.loc[len(df)] = [0, 'Reverse Common (Both)', str(revcom), '-',
-                       str(tmrcom), gccontent(revcom), len(revcom),
-                       a, b, c, '-', d]
-
-    a, b, c, d = score(revcom_left, tm_target, 1)
-    df.loc[len(df)] = [0, 'Reverse Common (Left)', str(revcom_left),
-                       '-', str(tmrcom_left), gccontent(revcom_left),
-                       len(revcom_left), a, b, c, '-', d]
-
-    a, b, c, d = score(revcom_right, tm_target, 1)
-    df.loc[len(df)] = [0, 'Reverse Common (Right)', str(revcom_right),
-                       '-', str(tmrcom_right), gccontent(revcom_right),
-                       len(revcom_right), a, b, c, '-', d]
-
+# This part we will find and optimize NNS primers. Next for loop goes over all codons
+# starting from second codon and turns each codon to NNS. Takes ~20-25 nucleotides
+# before and after NNS tries to optimize primer quality by trimming or adding.
+# there are 4 categories of primer quality measure that is evaluated.
+# More details on scoring can be found in score function in functions.py
 
 for i in range(1, len(protsequence)):
     primername = namer(i, protsequence)
@@ -110,76 +85,68 @@ for i in range(1, len(protsequence)):
                                     nucseqcount[i] - 18, nucseqcount[i] + 21, tm_target)
     aboth, aleft, aright = logic(nucsequence, 'NNS',
                                  nucseqcount[i], nucseqcount[i] + 3, tm_target, 20)
-    if pleft == None:
+    if pleft:
+        for curr_primer, p_extension, pos in zip([pboth, pleft, pright],
+                                                 ['-BF/R', '-LF/R', '-RF/R'],
+                                                 ['both', 'left', 'right']):
+            revcomp = reversecomplement(curr_primer, 1)
+            primers[pos][primername] = [curr_primer, revcomp, tmcalculator(curr_primer)]
+            a, b, c, d, e = score(curr_primer, tm_target)
+            df.loc[len(df)] = [i + 1, primername + p_extension,
+                               primers[pos][primername][0],
+                               primers[pos][primername][1],
+                               str(primers[pos][primername][2]),
+                               gccontent(primers[pos][primername][0]),
+                               len(primers[pos][primername][0]),
+                               a, b, c, d, e]
+    else:
         revcomp = reversecomplement(pboth, 1)
-        primers_right[primername] = primers_left[primername] = primers[primername] = [pboth, revcomp,
-                                                                                      tmcalculator(pboth)]
+        primers['right'][primername] = \
+            primers['left'][primername] = \
+            primers['both'][primername] = [pboth, revcomp, tmcalculator(pboth)]
         a, b, c, d, e = score(pboth, tm_target)
-        df.loc[len(df)] = [i + 1, primername + '-BF/R', primers[primername][0],
-                           primers[primername][1], str(primers[primername][2]),
-                           gccontent(primers[primername][0]), len(primers[primername][0]),
+        df.loc[len(df)] = [i + 1, primername + '-BF/R',
+                           primers['both'][primername][0],
+                           primers['both'][primername][1],
+                           str(primers['both'][primername][2]),
+                           gccontent(primers['both'][primername][0]),
+                           len(primers['both'][primername][0]),
                            a, b, c, d, e]
+    if aleft:
+        for curr_primer, p_extension, pos in zip([aboth, aleft, aright],
+                                                 ['-aBF/R', '-aLF/R', '-aRF/R'],
+                                                 ['both', 'left', 'right']):
+            arevcomp = reversecomplement(curr_primer, 1)
+            aprimers[pos][primername] = [curr_primer, arevcomp, tmcalculator(curr_primer)]
+            a, b, c, d, e = score(curr_primer, tm_target)
+            df.loc[len(df)] = [i + 1, primername + p_extension,
+                               aprimers[pos][primername][0],
+                               aprimers[pos][primername][1],
+                               str(aprimers[pos][primername][2]),
+                               gccontent(aprimers[pos][primername][0]),
+                               len(aprimers[pos][primername][0]),
+                               a, b, c, d, e]
 
     else:
-        revcomp_left = reversecomplement(pleft, 1)
-        revcomp_right = reversecomplement(pright, 1)
-        revcomp = reversecomplement(pboth, 1)
-        primers[primername] = [pboth, revcomp, tmcalculator(pboth)]
-        primers_left[primername] = [pleft, revcomp_left, tmcalculator(pleft)]
-        primers_right[primername] = [pright, revcomp_right, tmcalculator(pright)]
-
-        a, b, c, d, e = score(pboth, tm_target)
-        df.loc[len(df)] = [i + 1, primername + '-BF/R', primers[primername][0],
-                           primers[primername][1], str(primers[primername][2]),
-                           gccontent(primers[primername][0]), len(primers[primername][0]),
-                           a, b, c, d, e]
-        a, b, c, d, e = score(pleft, tm_target)
-        df.loc[len(df)] = [i + 1, primername + '-LF/R', primers_left[primername][0],
-                           primers_left[primername][1], str(primers_left[primername][2]),
-                           gccontent(primers_left[primername][0]), len(primers_left[primername][0]),
-                           a, b, c, d, e]
-
-        a, b, c, d, e = score(pright, tm_target)
-        df.loc[len(df)] = [i + 1, primername + '-RF/R', primers_right[primername][0],
-                           primers_right[primername][1], str(primers_right[primername][2]),
-                           gccontent(primers_right[primername][0]), len(primers_right[primername][0]),
-                           a, b, c, d, e]
-
-    if aleft == None:
         arevcomp = reversecomplement(aboth, 1)
-        aprimers_right[primername] = aprimers_left[primername] = aprimers[primername] = [aboth, arevcomp,
-                                                                                         tmcalculator(aboth)]
+        aprimers['right'][primername] = \
+            aprimers['left'][primername] = \
+            aprimers['both'][primername] = [aboth, arevcomp, tmcalculator(aboth)]
         a, b, c, d, e = score(aboth, tm_target)
-        df.loc[len(df)] = [i + 1, primername + '-aBF/R', aprimers[primername][0],
-                           aprimers[primername][1], str(aprimers[primername][2]),
-                           gccontent(aprimers[primername][0]), len(aprimers[primername][0]),
+        df.loc[len(df)] = [i + 1, primername + '-aBF/R',
+                           aprimers['both'][primername][0],
+                           aprimers['both'][primername][1],
+                           str(aprimers['both'][primername][2]),
+                           gccontent(aprimers['both'][primername][0]),
+                           len(aprimers['both'][primername][0]),
                            a, b, c, d, e]
 
-    else:
-        arevcomp_left = reversecomplement(aleft, 1)
-        arevcomp_right = reversecomplement(aright, 1)
-        arevcomp = reversecomplement(aboth, 1)
-        aprimers[primername] = [aboth, arevcomp, tmcalculator(aboth)]
-        aprimers_left[primername] = [aleft, arevcomp_left, tmcalculator(aleft)]
-        aprimers_right[primername] = [aright, arevcomp_right, tmcalculator(aright)]
-        a, b, c, d, e = score(aboth, tm_target)
-        df.loc[len(df)] = [i + 1, primername + '-aBF/R', aprimers[primername][0],
-                           aprimers[primername][1], str(aprimers[primername][2]),
-                           gccontent(aprimers[primername][0]), len(aprimers[primername][0]),
-                           a, b, c, d, e]
-        a, b, c, d, e = score(aleft, tm_target)
-        df.loc[len(df)] = [i + 1, primername + '-aLF/R', aprimers_left[primername][0],
-                           aprimers_left[primername][1], str(aprimers_left[primername][2]),
-                           gccontent(aprimers_left[primername][0]), len(aprimers_left[primername][0]),
-                           a, b, c, d, e]
-        a, b, c, d, e = score(aright, tm_target)
-        df.loc[len(df)] = [i + 1, primername + '-aRF/R', aprimers_right[primername][0],
-                           aprimers_right[primername][1], str(aprimers_right[primername][2]),
-                           gccontent(aprimers_right[primername][0]), len(aprimers_right[primername][0]),
-                           a, b, c, d, e]
+df = df.sort_values(by=['Residue Number', 'Total Score', 'Primer Name'],
+                    ascending=[True, False, False])  #
 
-df.sort_values(by=['Residue #', 'Total Score'],
-               ascending=[True, False],
-               inplace=True).set_index('Residue #')  #
-
-df.to_csv(genename + '-NNS_Primers.csv')
+df = df.astype(dtype=typedict)
+rounded_cols = ['Tm', 'GC Content (%)', 'GC Score',
+                'Tm Score', 'Wing Score', 'Total Score']
+df[rounded_cols] = df[rounded_cols].round(2)
+df = df.loc[~(df.duplicated(subset=['Residue Number', 'Primer Sequence (Fwd)'], keep='last')), :]
+df.to_csv('output/' + genename + '-NNS_Primers.csv', index=False)
