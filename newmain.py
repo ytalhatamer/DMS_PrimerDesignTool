@@ -1,5 +1,5 @@
 import numpy as np
-from globalvars import nucsequence, protsequence, \
+from globalvars import nucsequence, protsequence, common_fwd_pos, common_rev_pos, \
     tm_target, genename, nucseqcount, df, typedict
 from functions import namer, tmcalculator, gccontent, reversecomplement, \
     logic, justtrim, score
@@ -13,9 +13,13 @@ aprimers = dict(right=dict(), left=dict(), both=dict())
 
 # COMMON PRIMER DESIGN
 # Forward Common Primers
+# Common forward primer for all reactions are send for optimization.
 forwcom, forwcom_left, forwcom_right = justtrim(nucsequence,
-                                                nucsequence[10:50],
-                                                10, 50, tm_target)  # Common forward primer for all reactions
+                                                nucsequence[common_fwd_pos[0]:common_fwd_pos[1]],
+                                                common_fwd_pos[0],
+                                                common_fwd_pos[1],
+                                                tm_target)
+
 
 if forwcom_left:
     for forward_common, pos in zip([forwcom, forwcom_left, forwcom_right], ['both', 'left', 'right']):
@@ -37,9 +41,10 @@ else:
                        gccontent(forwcom), len(forwcom), a, b, c, np.nan, d]
 
 # Designing Reverse Common Primers
-revcom, revcom_left, revcom_right = justtrim(nucsequence, nucsequence[-50:-10],
-                                             len(nucsequence) - 50,
-                                             len(nucsequence) - 10,
+revcom, revcom_left, revcom_right = justtrim(nucsequence,
+                                             nucsequence[common_rev_pos[0]:common_rev_pos[1]],
+                                             len(nucsequence) + common_rev_pos[0],
+                                             len(nucsequence) + common_rev_pos[1],
                                              tm_target)  # Common reverse primer for all reactions
 
 if revcom_left:
